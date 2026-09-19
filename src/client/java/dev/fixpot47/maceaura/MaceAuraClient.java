@@ -86,12 +86,22 @@ public final class MaceAuraClient implements ClientModInitializer {
 
         boolean onGround = client.player.onGround();
 
+        double verticalVelocity = client.player.getDeltaMovement().y;
+
         if (onGround) {
             jumpedFromGround = false;
             attackedThisJump = false;
-        } else if (wasOnGround && client.player.getDeltaMovement().y > 0.0D) {
+        } else if (wasOnGround && verticalVelocity > 0.0D) {
+            // Normal jump from the ground.
             jumpedFromGround = true;
             attackedThisJump = false;
+        } else if (attackedThisJump && verticalVelocity > 0.08D) {
+            // Wind Burst launches the player upward after a successful mace smash.
+            // Treat that rebound as a new airborne attack cycle so another smash
+            // can happen on the next descent without touching the ground first.
+            jumpedFromGround = true;
+            attackedThisJump = false;
+            selectedTarget = null;
         }
 
         wasOnGround = onGround;
