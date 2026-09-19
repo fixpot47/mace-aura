@@ -17,13 +17,10 @@ import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.monster.Enemy;
@@ -63,14 +60,6 @@ public final class MaceAuraClient implements ClientModInitializer {
                 enabled = !enabled;
                 jumped = false;
                 selectedTarget = null;
-
-                if (client.player != null) {
-                    client.player.displayClientMessage(
-                            Component.literal("Mace Aura: " + (enabled ? "ON" : "OFF"))
-                                    .withStyle(enabled ? ChatFormatting.GREEN : ChatFormatting.RED),
-                            true
-                    );
-                }
             }
 
             if (!enabled) {
@@ -121,7 +110,6 @@ public final class MaceAuraClient implements ClientModInitializer {
         LivingEntity target = selectedTarget;
         if (isValidTarget(target)) {
             client.gameMode.attack(client.player, target);
-            client.player.swing(InteractionHand.MAIN_HAND);
         }
 
         jumped = false;
