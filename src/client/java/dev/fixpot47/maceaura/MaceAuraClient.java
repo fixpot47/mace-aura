@@ -20,6 +20,7 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ServerboundPunchPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -151,6 +152,7 @@ public final class MaceAuraClient implements ClientModInitializer {
         SwingAnimation swingAnimation = client.player.getMainHandItem().getAttackAnimation();
         client.gameMode.attack(client.player, target);
         client.player.swing(InteractionHand.MAIN_HAND, swingAnimation, false);
+        client.player.connection.send(ServerboundPunchPacket.INSTANCE);
         attackedThisJump = true;
     }
 
