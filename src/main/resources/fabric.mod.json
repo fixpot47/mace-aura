@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "maceaura",
+  "version": "${version}",
+  "name": "Mace Aura",
+  "description": "Standalone F10-toggle adaptation of Aoba Client's MaceAura module.",
+  "authors": ["fixpot47"],
+  "contributors": ["Cocolots / coltonk9043"],
+  "contact": {
+    "sources": "https://github.com/fixpot47/mace-aura"
+  },
+  "license": "GPL-3.0-or-later",
+  "icon": "assets/maceaura/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "dev.fixpot47.maceaura.MaceAuraClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.3",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}
