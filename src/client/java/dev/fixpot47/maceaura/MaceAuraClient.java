@@ -25,7 +25,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.phys.Vec3;
 
 public final class MaceAuraClient implements ClientModInitializer {
     public static final String MOD_ID = "maceaura";
@@ -123,7 +122,6 @@ public final class MaceAuraClient implements ClientModInitializer {
             return;
         }
 
-        aimAt(client, target);
 
         double verticalDifference = client.player.getY() - target.getY();
         if (verticalDifference < REQUIRED_HEIGHT) {
@@ -181,22 +179,6 @@ public final class MaceAuraClient implements ClientModInitializer {
         }
 
         return best;
-    }
-
-    private static void aimAt(Minecraft client, LivingEntity target) {
-        Vec3 eyes = client.player.getEyePosition();
-        Vec3 targetPoint = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
-
-        double dx = targetPoint.x - eyes.x;
-        double dy = targetPoint.y - eyes.y;
-        double dz = targetPoint.z - eyes.z;
-        double horizontal = Math.sqrt(dx * dx + dz * dz);
-
-        float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0D);
-        float pitch = (float) (-Math.toDegrees(Math.atan2(dy, horizontal)));
-
-        client.player.setYRot(yaw);
-        client.player.setXRot(pitch);
     }
 
     private static boolean isValidTarget(LivingEntity target) {
