@@ -31,12 +31,12 @@ jobs:
       - name: Verify final jar
         run: |
           mkdir -p dist
-          cp build/libs/mace-aura-1.0.0.jar dist/mace-aura.jar
+          cp build/libs/mace-aura-1.0.1.jar dist/mace-aura.jar
           jar tf dist/mace-aura.jar | grep 'dev/fixpot47/maceaura/MaceAuraClient.class'
           jar tf dist/mace-aura.jar | grep 'fabric.mod.json'
 
       - name: Upload mod jar
         uses: actions/upload-artifact@v4
         with:
-          name: mace-aura-1.0.0-mc26.3
+          name: mace-aura-1.0.1-mc26.3
           path: dist/mace-aura.jar

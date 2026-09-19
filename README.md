@@ -4,19 +4,28 @@ Standalone Fabric mod for Minecraft 26.3.
 
 Press **F10** to toggle Mace Aura ON/OFF.
 
-Default behavior follows Aoba Client's MaceAura defaults:
-- Radius: 5 blocks
-- Height: 100
-- Targets players and hostile mobs
-- Animals disabled
-- Attacks only when the normal attack cooldown is fully charged
+## How it works
+
+Mace Aura no longer teleports or spoofs the player position.
+
+When enabled:
+- Hold a mace in your main hand.
+- Stand at least 2 blocks above a player or mob.
+- Jump normally.
+- While you are falling, the mod aims at the closest valid target.
+- If the target is in attack range, visible, and your attack is charged, it attacks automatically.
+- It attacks at most once per jump.
+
+The status is shown above the hotbar:
+- `Mace Aura enabled`
+- `Mace Aura disabled`
 
 ## Credits
 
-Core behavior adapted from **Aoba Client** by **Cocolots / coltonk9043**:
+Inspired by **Aoba Client** by **Cocolots / coltonk9043**:
 https://github.com/Cocolots/Aoba-Client
 
-This standalone adaptation was modified by **fixpot47**.
+This standalone implementation was modified by **fixpot47**.
 
 ## License
 

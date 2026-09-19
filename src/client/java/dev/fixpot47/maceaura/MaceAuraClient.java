@@ -2,8 +2,8 @@
  * Mace Aura
  * Modified for a standalone Fabric mod by fixpot47 in 2026.
  *
- * Core MaceAura behavior is adapted from Aoba Client by Cocolots/coltonk9043.
- * Original source: https://github.com/Cocolots/Aoba-Client
+ * Inspired by the combat automation behavior of Aoba Client.
+ * Original project: https://github.com/Cocolots/Aoba-Client
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,23 +20,19 @@ import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.Enemy;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 
 public final class MaceAuraClient implements ClientModInitializer {
     public static final String MOD_ID = "maceaura";
 
-    private static final float RADIUS = 5.0F;
-    private static final float HEIGHT = 100.0F;
-
-    private static final boolean TARGET_ANIMALS = false;
-    private static final boolean TARGET_MONSTERS = true;
-    private static final boolean TARGET_PLAYERS = true;
+    private static final double TARGET_RADIUS = 5.0D;
+    private static final double ATTACK_RANGE = 4.5D;
+    private static final double REQUIRED_HEIGHT = 2.0D;
 
     private static final KeyMapping.Category CATEGORY = KeyMapping.Category.register(
             Identifier.fromNamespaceAndPath(MOD_ID, "controls")
@@ -44,7 +40,9 @@ public final class MaceAuraClient implements ClientModInitializer {
 
     private static KeyMapping toggleKey;
     private static boolean enabled;
-    private static boolean jumped;
+    private static boolean wasOnGround = true;
+    private static boolean jumpedFromGround;
+    private static boolean attackedThisJump;
     private static LivingEntity selectedTarget;
 
     @Override
@@ -59,8 +57,9 @@ public final class MaceAuraClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (toggleKey.consumeClick()) {
                 enabled = !enabled;
-                jumped = false;
                 selectedTarget = null;
+                jumpedFromGround = false;
+                attackedThisJump = false;
 
                 client.gui.hud.setOverlayMessage(
                         Component.literal(enabled ? "Mace Aura enabled" : "Mace Aura disabled"),
@@ -79,90 +78,118 @@ public final class MaceAuraClient implements ClientModInitializer {
     private static void tick(Minecraft client) {
         if (client.player == null || client.level == null || client.gameMode == null) {
             selectedTarget = null;
-            jumped = false;
+            jumpedFromGround = false;
+            attackedThisJump = false;
+            wasOnGround = true;
             return;
         }
 
-        selectTarget(client);
+        boolean onGround = client.player.onGround();
 
-        if (client.player.getAttackStrengthScale(0.0F) != 1.0F) {
+        if (onGround) {
+            jumpedFromGround = false;
+            attackedThisJump = false;
+        } else if (wasOnGround && client.player.getDeltaMovement().y > 0.0D) {
+            jumpedFromGround = true;
+            attackedThisJump = false;
+        }
+
+        wasOnGround = onGround;
+
+        if (!jumpedFromGround || attackedThisJump) {
+            selectedTarget = null;
             return;
         }
 
-        if (!jumped) {
-            LivingEntity target = selectedTarget;
-            if (!isValidTarget(target)) {
-                return;
-            }
-
-            sendPaddingPackets(client);
-
-            Vec3 newPos = client.player.position().add(0.0, HEIGHT, 0.0);
-            client.player.connection.send(new ServerboundMovePlayerPacket.Pos(
-                    newPos.x, newPos.y, newPos.z, false, false
-            ));
-
-            jumped = true;
+        if (client.player.getMainHandItem().getItem() != Items.MACE) {
+            selectedTarget = null;
             return;
         }
 
-        sendPaddingPackets(client);
-
-        Vec3 newPos = client.player.position();
-        client.player.connection.send(new ServerboundMovePlayerPacket.Pos(
-                newPos.x, newPos.y, newPos.z, false, false
-        ));
-
+        selectedTarget = findTarget(client);
         LivingEntity target = selectedTarget;
-        if (isValidTarget(target)) {
-            client.gameMode.attack(client.player, target);
+
+        if (!isValidTarget(target)) {
+            return;
         }
 
-        jumped = false;
+        aimAt(client, target);
+
+        double verticalDifference = client.player.getY() - target.getY();
+        if (verticalDifference < REQUIRED_HEIGHT) {
+            return;
+        }
+
+        // Wait until the player is actually falling after the jump.
+        if (client.player.getDeltaMovement().y >= 0.0D) {
+            return;
+        }
+
+        if (client.player.getAttackStrengthScale(0.0F) < 0.99F) {
+            return;
+        }
+
+        if (client.player.distanceToSqr(target) > ATTACK_RANGE * ATTACK_RANGE) {
+            return;
+        }
+
+        if (!client.player.hasLineOfSight(target)) {
+            return;
+        }
+
+        client.gameMode.attack(client.player, target);
+        attackedThisJump = true;
     }
 
-    private static void selectTarget(Minecraft client) {
+    private static LivingEntity findTarget(Minecraft client) {
         LivingEntity best = null;
-        double bestDistSqr = 0.0;
-        double radiusSqr = RADIUS * RADIUS;
+        double bestDistance = Double.MAX_VALUE;
+        double radiusSqr = TARGET_RADIUS * TARGET_RADIUS;
 
         for (LivingEntity entity : client.level.getEntitiesOfClass(
                 LivingEntity.class,
-                client.player.getBoundingBox().inflate(RADIUS),
+                client.player.getBoundingBox().inflate(TARGET_RADIUS),
                 entity -> entity != client.player && entity.isAlive() && !entity.isRemoved()
         )) {
-            boolean allowed =
-                    (TARGET_PLAYERS && entity instanceof Player)
-                    || (TARGET_MONSTERS && entity instanceof Enemy)
-                    || (TARGET_ANIMALS && entity instanceof Animal);
-
-            if (!allowed) {
+            if (!(entity instanceof Player) && !(entity instanceof Mob)) {
                 continue;
             }
 
-            double distSqr = client.player.distanceToSqr(entity);
-            if (distSqr > radiusSqr) {
+            if (client.player.getY() - entity.getY() < REQUIRED_HEIGHT) {
                 continue;
             }
 
-            if (best == null || distSqr < bestDistSqr) {
+            double distance = client.player.distanceToSqr(entity);
+            if (distance > radiusSqr) {
+                continue;
+            }
+
+            if (distance < bestDistance) {
                 best = entity;
-                bestDistSqr = distSqr;
+                bestDistance = distance;
             }
         }
 
-        selectedTarget = best;
+        return best;
+    }
+
+    private static void aimAt(Minecraft client, LivingEntity target) {
+        Vec3 eyes = client.player.getEyePosition();
+        Vec3 targetPoint = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+
+        double dx = targetPoint.x - eyes.x;
+        double dy = targetPoint.y - eyes.y;
+        double dz = targetPoint.z - eyes.z;
+        double horizontal = Math.sqrt(dx * dx + dz * dz);
+
+        float yaw = (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0D);
+        float pitch = (float) (-Math.toDegrees(Math.atan2(dy, horizontal)));
+
+        client.player.setYRot(yaw);
+        client.player.setXRot(pitch);
     }
 
     private static boolean isValidTarget(LivingEntity target) {
         return target != null && !target.isRemoved() && target.isAlive();
-    }
-
-    private static void sendPaddingPackets(Minecraft client) {
-        int packetsRequired = Math.round((float) Math.ceil(Math.abs(HEIGHT / 10.0F)));
-
-        for (int i = 0; i < packetsRequired; i++) {
-            client.player.connection.send(new ServerboundMovePlayerPacket.StatusOnly(false, false));
-        }
     }
 }
