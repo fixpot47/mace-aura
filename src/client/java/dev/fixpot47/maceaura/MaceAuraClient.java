@@ -25,7 +25,9 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.SwingAnimation;
 
 public final class MaceAuraClient implements ClientModInitializer {
     public static final String MOD_ID = "maceaura";
@@ -146,7 +148,9 @@ public final class MaceAuraClient implements ClientModInitializer {
             return;
         }
 
+        SwingAnimation swingAnimation = client.player.getMainHandItem().getAttackAnimation();
         client.gameMode.attack(client.player, target);
+        client.player.swing(InteractionHand.MAIN_HAND, swingAnimation, false);
         attackedThisJump = true;
     }
 

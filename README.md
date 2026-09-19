@@ -14,6 +14,7 @@ When enabled:
 - Jump normally.
 - While you are falling, the mod selects the closest valid target (including mannequins) without moving your camera.
 - If the target is in attack range, visible, and your attack is charged, it attacks automatically without rotating your view.
+- Automatic attacks now play the normal main-hand swing animation.
 - It attacks at most once per normal jump or Wind Burst bounce.
 - Wind Burst rebounds automatically re-arm Mace Aura for the next descent.
 
