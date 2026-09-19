@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.decoration.Mannequin;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Items;
 
@@ -159,7 +160,7 @@ public final class MaceAuraClient implements ClientModInitializer {
                 client.player.getBoundingBox().inflate(TARGET_RADIUS),
                 entity -> entity != client.player && entity.isAlive() && !entity.isRemoved()
         )) {
-            if (!(entity instanceof Player) && !(entity instanceof Mob)) {
+            if (!(entity instanceof Player) && !(entity instanceof Mob) && !(entity instanceof Mannequin)) {
                 continue;
             }
 
