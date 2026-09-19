@@ -14,7 +14,8 @@ When enabled:
 - Jump normally.
 - While you are falling, the mod aims at the closest valid target.
 - If the target is in attack range, visible, and your attack is charged, it attacks automatically.
-- It attacks at most once per jump.
+- It attacks at most once per normal jump or Wind Burst bounce.
+- Wind Burst rebounds automatically re-arm Mace Aura for the next descent.
 
 The status is shown above the hotbar:
 - `Mace Aura enabled`
