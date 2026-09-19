@@ -12,8 +12,8 @@ When enabled:
 - Hold a mace in your main hand.
 - Stand at least 2 blocks above a player or mob.
 - Jump normally.
-- While you are falling, the mod aims at the closest valid target.
-- If the target is in attack range, visible, and your attack is charged, it attacks automatically.
+- While you are falling, the mod selects the closest valid target without moving your camera.
+- If the target is in attack range, visible, and your attack is charged, it attacks automatically without rotating your view.
 - It attacks at most once per normal jump or Wind Burst bounce.
 - Wind Burst rebounds automatically re-arm Mace Aura for the next descent.
 
