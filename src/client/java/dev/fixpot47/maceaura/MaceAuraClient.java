@@ -19,6 +19,7 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
@@ -60,6 +61,11 @@ public final class MaceAuraClient implements ClientModInitializer {
                 enabled = !enabled;
                 jumped = false;
                 selectedTarget = null;
+
+                client.gui.hud.setOverlayMessage(
+                        Component.literal(enabled ? "Mace Aura enabled" : "Mace Aura disabled"),
+                        false
+                );
             }
 
             if (!enabled) {
